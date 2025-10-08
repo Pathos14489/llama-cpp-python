@@ -682,6 +682,13 @@ class Llama:
         mirostat_mode: int = 0,
         mirostat_eta: float = 0.1,
         mirostat_tau: float = 5.0,
+        xtc_probability: float = 0.0,
+        xtc_threshold: float = 0.1,
+        dry_multiplier: float = 0.0,
+        dry_allowed_length: int = 2,
+        dry_base: float = 1.75,
+        dry_penalty_last_n: int = -1,
+        dry_seq_breakers: list[str] = [],
         penalize_nl: bool = True,
         logits_processor: Optional[LogitsProcessorList] = None,
         grammar: Optional[LlamaGrammar] = None,
@@ -749,11 +756,13 @@ class Llama:
             else:
                 n_probs = 0
                 min_keep = max(1, n_probs)
+                sampler.add_dry(self._model, self._ctx, dry_multiplier, dry_base, dry_allowed_length, dry_penalty_last_n, dry_seq_breakers)
                 sampler.add_top_k(top_k)
                 sampler.add_typical(typical_p, min_keep)
                 sampler.add_top_p(top_p, min_keep)
                 sampler.add_min_p(min_p, min_keep)
                 sampler.add_temp(temp)
+                sampler.add_xtc(xtc_probability, xtc_threshold, min_keep, self._seed)
                 sampler.add_dist(self._seed)
         return sampler
 
@@ -771,6 +780,13 @@ class Llama:
         mirostat_mode: int = 0,
         mirostat_eta: float = 0.1,
         mirostat_tau: float = 5.0,
+        xtc_probability: float = 0.0,
+        xtc_threshold: float = 0.1,
+        dry_multiplier: float = 0.0,
+        dry_allowed_length: int = 2,
+        dry_base: float = 1.75,
+        dry_penalty_last_n: int = -1,
+        dry_seq_breakers: list[str] = [],
         penalize_nl: bool = True,
         logits_processor: Optional[LogitsProcessorList] = None,
         grammar: Optional[LlamaGrammar] = None,
@@ -806,6 +822,13 @@ class Llama:
                 mirostat_mode=mirostat_mode,
                 mirostat_tau=mirostat_tau,
                 mirostat_eta=mirostat_eta,
+                xtc_probability=xtc_probability,
+                xtc_threshold=xtc_threshold,
+                dry_multiplier=dry_multiplier,
+                dry_allowed_length=dry_allowed_length,
+                dry_base=dry_base,
+                dry_penalty_last_n=dry_penalty_last_n,
+                dry_seq_breakers=dry_seq_breakers,
                 penalize_nl=penalize_nl,
                 logits_processor=logits_processor,
                 grammar=grammar,
@@ -835,6 +858,13 @@ class Llama:
         mirostat_mode: int = 0,
         mirostat_tau: float = 5.0,
         mirostat_eta: float = 0.1,
+        xtc_probability: float = 0.0,
+        xtc_threshold: float = 0.1,
+        dry_multiplier: float = 0.0,
+        dry_allowed_length: int = 2,
+        dry_base: float = 1.75,
+        dry_penalty_last_n: int = -1,
+        dry_seq_breakers: list[str] = [],
         penalize_nl: bool = True,
         logits_processor: Optional[LogitsProcessorList] = None,
         stopping_criteria: Optional[StoppingCriteriaList] = None,
@@ -874,6 +904,13 @@ class Llama:
             mirostat_mode=mirostat_mode,
             mirostat_tau=mirostat_tau,
             mirostat_eta=mirostat_eta,
+            xtc_probability=xtc_probability,
+            xtc_threshold=xtc_threshold,
+            dry_multiplier=dry_multiplier,
+            dry_allowed_length=dry_allowed_length,
+            dry_base=dry_base,
+            dry_penalty_last_n=dry_penalty_last_n,
+            dry_seq_breakers=dry_seq_breakers,
             penalize_nl=penalize_nl,
             logits_processor=logits_processor,
             grammar=grammar,
@@ -926,6 +963,13 @@ class Llama:
                     mirostat_mode=mirostat_mode,
                     mirostat_tau=mirostat_tau,
                     mirostat_eta=mirostat_eta,
+                    xtc_probability=xtc_probability,
+                    xtc_threshold=xtc_threshold,
+                    dry_multiplier=dry_multiplier,
+                    dry_allowed_length=dry_allowed_length,
+                    dry_base=dry_base,
+                    dry_penalty_last_n=dry_penalty_last_n,
+                    dry_seq_breakers=dry_seq_breakers,
                     logits_processor=logits_processor,
                     grammar=grammar,
                     penalize_nl=penalize_nl,
