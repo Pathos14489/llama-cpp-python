@@ -3896,20 +3896,20 @@ def llama_sampler_init_xtc(
 @ctypes_function(
 "llama_sampler_init_dry",
     [
-        llama_vocab_p_ctypes,
+        # llama_vocab_p_ctypes,
         ctypes.c_int32,
         ctypes.c_float,
         ctypes.c_float,
         ctypes.c_int32,
         ctypes.c_int32,
-        ctypes.POINTER(ctypes.c_char_p),
-        ctypes.c_size_t
+        # ctypes.POINTER(ctypes.c_char_p),
+        # ctypes.c_size_t
     ],
     llama_sampler_p_ctypes,
 )
 def llama_sampler_init_dry(
     # vocab: llama_vocab_p,
-    # context_size: int,
+    context_size: int,
     dry_multiplier: float,
     dry_base: float,
     dry_allowed_length: int,
