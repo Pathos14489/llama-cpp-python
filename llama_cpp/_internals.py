@@ -715,16 +715,16 @@ class LlamaSampler:
     #                                             allowed_length, penalty_last_n,
     #                                             arr, len(seq_breakers))
     #     self._add_sampler(sampler)
-    def add_dry(self, m: float, b: float, l: int, n: int, breakers: List[str]):
-        # Convert breakers to C array
-        seq_breakers_bytes = [s.encode('utf-8') for s in breakers]
-        arr = (ctypes.c_char_p * len(seq_breakers_bytes))(*seq_breakers_bytes)
-        sampler = llama_cpp.llama_sampler_init_dry(
-            None, 0, m, b, l, n,
-            arr,
-            len(breakers)
-        )
-        llama_cpp.llama_sampler_chain_add(self.sampler, sampler)
+    # def add_dry(self, m: float, b: float, l: int, n: int, breakers: List[str]):
+    #     # Convert breakers to C array
+    #     seq_breakers_bytes = [s.encode('utf-8') for s in breakers]
+    #     arr = (ctypes.c_char_p * len(seq_breakers_bytes))(*seq_breakers_bytes)
+    #     sampler = llama_cpp.llama_sampler_init_dry(
+    #         None, 0, m, b, l, n,
+    #         arr,
+    #         len(breakers)
+    #     )
+    #     llama_cpp.llama_sampler_chain_add(self.sampler, sampler)
 
     def add_top_n_sigma(self, n: float):
         sampler = llama_cpp.llama_sampler_init_top_n_sigma(n)
@@ -790,8 +790,8 @@ class LlamaSampler:
         model: LlamaModel,
         n_ctx_train: int,
         dry_multiplier: float,
-        dry_base: float,
         dry_allowed_length: int,
+        dry_base: float,
         dry_penalty_last_n: int,
         seq_breakers: List[str]
     ):
@@ -804,8 +804,8 @@ class LlamaSampler:
             model.vocab,
             n_ctx_train,
             dry_multiplier,
-            dry_base,
             dry_allowed_length,
+            dry_base,
             dry_penalty_last_n,
             breaker_ptrs,
             len(seq_breakers)
