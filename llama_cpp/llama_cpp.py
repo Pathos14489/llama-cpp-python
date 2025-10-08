@@ -3908,14 +3908,14 @@ def llama_sampler_init_xtc(
     llama_sampler_p_ctypes,
 )
 def llama_sampler_init_dry(
-    vocab: llama_vocab_p,
-    context_size: int,
+    # vocab: llama_vocab_p,
+    # context_size: int,
     dry_multiplier: float,
     dry_base: float,
     dry_allowed_length: int,
     dry_penalty_last_n: int,
-    seq_breakers: list[str],
-    num_breakers: int,
+    # seq_breakers: list[str],
+    # num_breakers: int,
 ) -> llama_sampler_p:
     ...
 
