@@ -788,7 +788,7 @@ class LlamaSampler:
     def add_dry(
         self,
         model: LlamaModel,
-        n_ctx_train: int,
+        ctx: LlamaContext,
         dry_multiplier: float,
         dry_base: float,
         dry_allowed_length: int,
@@ -809,14 +809,14 @@ class LlamaSampler:
             # dry_penalty_last_n=dry_penalty_last_n,
             # breaker_ptrs=breaker_ptrs,
             # num_breakers=len(seq_breakers)
-            # model.vocab,
-            n_ctx_train,
+            model.vocab,
+            ctx.n_ctx(),
             dry_multiplier,
             dry_base,
             dry_allowed_length,
             dry_penalty_last_n,
-            # breaker_ptrs,
-            # len(seq_breakers)
+            breaker_ptrs,
+            len(seq_breakers)
         )
         llama_cpp.llama_sampler_chain_add(self.sampler, sampler)
 
