@@ -3198,7 +3198,8 @@ while also answering every question accurately, clearly, and step-by-step when a
                         #   positive text token IDs (e.g., Qwen3.5 vocab goes up to ~152k).
                         # This empowers `longest_token_prefix` to correctly identify and reuse cached images,
                         # while instantly breaking the match if the image content changes.
-                        media_id = - (zlib.crc32(real_media_url.encode('utf-8')) % (2**24)) - 100
+                        # media_id = - (zlib.crc32(real_media_url.encode('utf-8')) % (2**24)) - 100
+                        media_id = - (zlib.crc32(real_media_url.encode('utf-8')) & 0xFFFFFF) - 100
                         media_items_cur += 1
                     else:
                         # Magic Negative Number as fallback :)
