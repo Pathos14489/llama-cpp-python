@@ -9,6 +9,7 @@ import os
 import random
 import string
 import sys
+import zlib
 
 from contextlib import ExitStack
 from typing import (
@@ -3161,6 +3162,10 @@ while also answering every question accurately, clearly, and step-by-step when a
             current_idx = 0
             n_chunks = self._mtmd_cpp.mtmd_input_chunks_size(chunks)
 
+            # Cursor to track the actual media contents (URLs or base64 data) provided by the user
+            media_items_count = len(media_items)
+            media_items_cur = 0
+
             for i in range(n_chunks):
                 chunk = self._mtmd_cpp.mtmd_input_chunks_get(chunks, i)
                 if chunk is None: continue
@@ -3181,16 +3186,26 @@ while also answering every question accurately, clearly, and step-by-step when a
                     ]:
                     # Extract media properties
                     chunk_n_tokens = self._mtmd_cpp.mtmd_input_chunk_get_n_tokens(chunk)
-                    chunk_id_bytes = self._mtmd_cpp.mtmd_input_chunk_get_id(chunk)
 
-                    if chunk_id_bytes:
+                    if media_items_cur < media_items_count:
+                        # The C++ parser only sees identical placeholders (e.g., "<__media__>").
+                        # We MUST inject the actual media content's identity here.
+                        real_media_url = media_items[media_items_cur]["url"]
                         # Vocabulary Positive forward: 0 to 248,319 (Qwen3.5)
-                        # Create Negative Reverse Vocabulary ID: -100 to -16,777,316
-                        # Improved longest_token_prefix search matching performance
-                        media_id = - (abs(hash(chunk_id_bytes.decode('utf-8', errors='ignore'))) % (2**24)) - 100
+                        # Generate a deterministic, unique negative ID for this specific image/audio.
+                        # - zlib.crc32 ensures cross-platform and cross-run consistency (unlike Python's hash()).
+                        # - We map it to a negative space (-100 to -16,777,316) to avoid colliding with
+                        #   positive text token IDs (e.g., Qwen3.5 vocab goes up to ~152k).
+                        # This empowers `longest_token_prefix` to correctly identify and reuse cached images,
+                        # while instantly breaking the match if the image content changes.
+                        media_id = - (zlib.crc32(real_media_url.encode('utf-8')) % (2**24)) - 100
+                        media_items_cur += 1
                     else:
                         # Magic Negative Number as fallback :)
                         media_id = -314159
+
+                    if self.verbose:
+                        print(f"{self.log_prefix}(mtmd_input_chunk_media_id): chunk_n_tokens:{chunk_n_tokens}, media_id: {media_id}, ")
 
                     chunk_token_spans.append((current_idx, current_idx + chunk_n_tokens, chunk, chunk_type, media_id))
 
