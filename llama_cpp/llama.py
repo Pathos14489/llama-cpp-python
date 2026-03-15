@@ -1210,7 +1210,7 @@ class Llama:
         # Check for kv cache prefix match
         if reset and self.n_tokens > 0:
             # 1. First, check for a 100% exact match of the entire sequence
-            full_match_prefix = self.longest_token_prefix(self._input_ids, tokens)
+            full_match_prefix = self.longest_token_prefix(self._input_ids, tokens, self.verbose)
 
             # --- FAST PATH: Zero-latency bypass for Hybrid Single-Turn & Multimodal ---
             # If the cache is disabled (max_checkpoints <= 0) and we have a 100% match,
@@ -1233,7 +1233,7 @@ class Llama:
             else:
                 # By matching against `tokens[:-1]`, we intentionally drop the last token.
                 # This forces the engine to re-evaluate the final token to refresh sampling logits.
-                longest_prefix = self.longest_token_prefix(self._input_ids, tokens[:-1])
+                longest_prefix = self.longest_token_prefix(self._input_ids, tokens[:-1], self.verbose)
 
                 if longest_prefix > 0:
                     reset = False
@@ -1840,10 +1840,10 @@ class Llama:
             try:
                 cache_item = self.cache[prompt_tokens]
                 cache_prefix_len = Llama.longest_token_prefix(
-                    cache_item.input_ids, prompt_tokens
+                    cache_item.input_ids, prompt_tokens, self.verbose
                 )
                 eval_prefix_len = Llama.longest_token_prefix(
-                    self._input_ids, prompt_tokens
+                    self._input_ids, prompt_tokens, self.verbose
                 )
                 if cache_prefix_len > eval_prefix_len:
                     self.load_state(cache_item)
@@ -2996,7 +2996,8 @@ prompt: The prompt to generate text from.
     @staticmethod
     def longest_token_prefix(
         current_ids: Union[Sequence[int], npt.NDArray[np.intc]],
-        new_tokens: Union[Sequence[int], npt.NDArray[np.intc]]
+        new_tokens: Union[Sequence[int], npt.NDArray[np.intc]],
+        verbose: bool = False
     ) -> int:
         """
         Calculates the length of the longest common prefix between two token sequences.
@@ -3008,12 +3009,19 @@ prompt: The prompt to generate text from.
         Args:
             current_ids: The existing token sequence (e.g., KV cache).
             new_tokens: The new input token sequence.
+            verbose: If True, prints detailed debug information to stderr.
 
         Returns:
             int: The number of matching tokens from the start.
         """
         # Fast exit for empty sequences to avoid unnecessary processing
         if len(current_ids) == 0 or len(new_tokens) == 0:
+            if verbose:
+                print(
+                    f"Llama.longest_token_prefix [Fast Exit 1]: Empty sequence detected. "
+                    f"len(current_ids)={len(current_ids)}, len(new_tokens)={len(new_tokens)}",
+                    file=sys.stderr
+                )
             return 0
 
         # Determine the comparison range (limited by the shorter sequence)
@@ -3022,6 +3030,12 @@ prompt: The prompt to generate text from.
         # Probe inspection: Use Python to quickly compare the first token
         # If the tokens are different from the beginning, return immediately to avoid any NumPy overhead.
         if current_ids[0] != new_tokens[0]:
+            if verbose:
+                print(
+                    f"Llama.longest_token_prefix [Fast Exit 2]: First token mismatch. "
+                    f"current_ids[0]={current_ids[0]} vs new_tokens[0]={new_tokens[0]}",
+                    file=sys.stderr
+                )
             return 0
 
         # Accelerating SIMD for Large Data Volumes

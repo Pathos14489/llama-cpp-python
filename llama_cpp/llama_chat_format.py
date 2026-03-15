@@ -3206,7 +3206,7 @@ while also answering every question accurately, clearly, and step-by-step when a
                         media_id = -314159
 
                     if self.verbose:
-                        print(f"{self.log_prefix}(mtmd_input_chunk_media_id): chunk_n_tokens:{chunk_n_tokens}, media_id: {media_id}, ")
+                        print(f"{self.log_prefix}(mtmd_input_chunk_media_id): chunk_n_tokens: {chunk_n_tokens}, media_id: {media_id}, ")
 
                     chunk_token_spans.append((current_idx, current_idx + chunk_n_tokens, chunk, chunk_type, media_id))
 
@@ -3303,7 +3303,7 @@ while also answering every question accurately, clearly, and step-by-step when a
             # 3. KV Cache Synchronization & State Rollback
             # Compares the virtual ledger with physical history to prevent Cache Poisoning.
             current_history = llama.input_ids[:llama.n_tokens].tolist()
-            longest_prefix = llama.longest_token_prefix(current_history, full_prompt_ids)
+            longest_prefix = llama.longest_token_prefix(current_history, full_prompt_ids, self.verbose)
 
             if longest_prefix < llama.n_tokens:
                 if llama.is_hybrid and llama._hybrid_cache_mgr is not None:
