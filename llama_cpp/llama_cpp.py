@@ -1913,7 +1913,6 @@ def llama_model_quantize(
 
 # // Load a LoRA adapter from file
 # // The adapter is valid as long as the associated model is not freed
-# // All adapters must be loaded before context creation
 # LLAMA_API struct llama_adapter_lora * llama_adapter_lora_init(
 #         struct llama_model * model,
 #         const char * path_lora);
@@ -2016,9 +2015,8 @@ def llama_adapter_meta_val_str_by_index(
 
 
 # // Manually free a LoRA adapter
-# // Note: loaded adapters will be free when the associated model is deleted
-# LLAMA_API DEPRECATED(void llama_adapter_lora_free(struct llama_adapter_lora * adapter),
-#         "adapters are now freed together with the associated model");
+# // NOTE: loaded adapters that are not manually freed will be freed when the associated model is deleted
+# LLAMA_API void llama_adapter_lora_free(struct llama_adapter_lora * adapter);
 @ctypes_function(
     "llama_adapter_lora_free",
     [llama_adapter_lora_p_ctypes],
