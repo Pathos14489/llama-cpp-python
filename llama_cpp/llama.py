@@ -1243,10 +1243,18 @@ class Llama:
                     if longest_prefix == len(tokens):
                         if self.is_hybrid and (self._hybrid_cache_mgr is None or self._hybrid_cache_mgr.max_checkpoints <= 0):
                             if self.verbose:
-                                print(f"Llama.generate: Full match on disabled hybrid cache. Skipping prefix-- to use existing fresh logits.", file=sys.stderr)
+                                print(f"Llama.generate: Full match(tokens) on disabled hybrid cache. Skipping prefix-- to use existing fresh logits.", file=sys.stderr)
                         else:
                             if self.verbose:
-                                print(f"Llama.generate: Full match. Forcing prefix-- to evaluate 1 token.", file=sys.stderr)
+                                print(f"Llama.generate: Full match(tokens). Forcing prefix-- to evaluate 1 token.", file=sys.stderr)
+                            longest_prefix -= 1
+                    if longest_prefix == self.n_tokens:
+                        if self.is_hybrid and (self._hybrid_cache_mgr is None or self._hybrid_cache_mgr.max_checkpoints <= 0):
+                            if self.verbose:
+                                print(f"Llama.generate: Full match(n_tokens) on disabled hybrid cache. Skipping prefix-- to use existing fresh logits.", file=sys.stderr)
+                        else:
+                            if self.verbose:
+                                print(f"Llama.generate: Full match(n_tokens). Forcing prefix-- to evaluate 1 token.", file=sys.stderr)
                             longest_prefix -= 1
 
                     # Physically erase trailing "ghost" tokens from the C++ KV cache
